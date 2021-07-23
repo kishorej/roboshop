@@ -1,0 +1,23 @@
+
+
+source common
+
+echo "Nginx Installation"
+yum install nginx -y &>>$LOG
+STAT_CHK $?
+
+echo "Starting Ngnix"
+systemctl enable nginx &>>$LOG && systemctl start nginx &>>$LOG
+STAT_CHK $?
+
+echo "Download the HTDOCS content and deploy under the Nginx path."
+curl -s -L -o /tmp/frontend.zip "https://github.com/roboshop-devops-project/frontend/archive/main.zip" &>>$LOG
+STAT_CHK $?
+
+echo "Deploy in Nginx Default Location."
+cd /usr/share/nginx/html &>>$LOG && rm -rf * &>>$LOG && unzip /tmp/frontend.zip &>>$LOG && mv frontend-main/* . &>>$LOG && mv static/* . &>>$LOG && rm -rf frontend-master static &>>$LOG && mv localhost.conf /etc/nginx/default.d/roboshop.conf &>>$LOG
+STAT_CHK $?
+
+echo "Finally restart the service once to effect the changes."
+systemctl restart nginx &>>$LOG
+STAT_CHK $?
